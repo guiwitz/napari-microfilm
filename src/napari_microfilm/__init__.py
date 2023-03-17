@@ -8,4 +8,4 @@ except ImportError:
 
 
 
-from ._widget import ExampleQWidget, example_magic_widget
+from .microfilm_widget import MicrofilmWidget

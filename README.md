@@ -7,22 +7,15 @@
 [![codecov](https://codecov.io/gh/guiwitz/napari-microfilm/branch/main/graph/badge.svg)](https://codecov.io/gh/guiwitz/napari-microfilm)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-microfilm)](https://napari-hub.org/plugins/napari-microfilm)
 
-Create microfilm images with napari views
+Create microfilm images with napari views.
 
-----------------------------------
+**This plugin is heavily a work in progress, and might never be officially released in its current form, so use cautiously!**.
 
-This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
-
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/plugins/index.html
--->
+Note that this plugin is heavily based on the structure of [napari-animation](https://github.com/napari/napari-animation) to handle the capture of key-frames.
 
 ## Installation
 
+**Not yet on pypi!**
 You can install `napari-microfilm` via [pip]:
 
     pip install napari-microfilm
