@@ -354,7 +354,8 @@ class MicrofilmWidget(QWidget):
         # Go through each element, remove existing text and add label
         for ind, m in enumerate(self.panel.microplots.flatten()):
             if m is not None:
-                m.ax.texts.clear()
+                if len(m.ax.texts) > 0:
+                    m.ax.texts.clear()
                 if self._label_checkbox.isChecked():
                     m.add_label(
                         label_text=labels[ind],
