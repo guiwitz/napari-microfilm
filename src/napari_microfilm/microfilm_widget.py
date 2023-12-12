@@ -10,8 +10,10 @@ QGroupBox, QGridLayout, QVBoxLayout, QLabel, QColorDialog,
 QTabWidget, QLineEdit, QCheckBox, QSizePolicy, QFileDialog)
 from qtpy.QtGui import QPixmap, QColor
 from qtpy.QtCore import Qt
+from cmap import Colormap
 
 import microfilm.microplot
+from microfilm import colorify
 import numpy as np
 from .napari_panel import NapariPanel
 from .panel_list_control_widget import PanelElementListControlWidget
@@ -134,6 +136,11 @@ class MicrofilmWidget(QWidget):
         self._show_preview.setText('Show preview')
         self._main_layout.addWidget(self._show_preview)
 
+        # add image as layer
+        self.btn_add_image_as_layer = QPushButton()
+        self.btn_add_image_as_layer.setText('Add single image as layer')
+        self._main_layout.addWidget(self.btn_add_image_as_layer)
+
         # add callbacks for widgets 
         self._add_callbacks()
 
@@ -143,7 +150,7 @@ class MicrofilmWidget(QWidget):
         self.numrows = QSpinBox()
         self.numrows.setValue(1)
         self.numcolumns = QSpinBox()
-        self.numcolumns.setValue(2)
+        self.numcolumns.setValue(1)
         sizes_group = QGroupBox('Sizes')
         sizes_form = QGridLayout()
         sizes_form.addWidget(QLabel('Rows'), 0,0)
@@ -197,6 +204,8 @@ class MicrofilmWidget(QWidget):
 
         self._check_channel_labels.stateChanged.connect(self.reinitialize)
         self._show_preview.clicked.connect(self.show_preview)
+
+        self.btn_add_image_as_layer.clicked.connect(self.add_image_as_layer)
 
     def _on_active_panelitem_changed(self, event):
         """Callback on change of active panelitem in the key frames list."""
@@ -401,3 +410,34 @@ class MicrofilmWidget(QWidget):
 
         (pos_row, pos_col) = np.unravel_index(pos_index, shape=(self.numrows.value(), self.numcolumns.value()))
         return pos_row, pos_col
+    
+    def add_image_as_layer(self, event=None):
+        
+        rgb_image = [x.data for x in self.viewer.layers if x.visible]
+        contrasts = [np.array(x.contrast_limits).tolist() for x in self.viewer.layers if x.visible]
+
+        cmaps = [Colormap(x.colormap.colors).to_matplotlib() for x in self.viewer.layers if x.visible]
+
+        if self.viewer.dims.ndim == 3:
+            rgb_sequence = []
+            for ind in range(rgb_image[0].shape[0]):
+                rgb_to_plot = np.stack([x[ind] for x in rgb_image], axis=0)
+                rgb_to_plot, _, _, _ = colorify.multichannel_to_rgb(
+                    rgb_to_plot,
+                    cmaps=cmaps,
+                    rescale_type='limits', 
+                    limits=contrasts,
+                    proj_type='sum')
+                rgb_sequence.append(rgb_to_plot)
+            rgb_sequence = np.stack(rgb_sequence, axis=0)
+        elif self.viewer.dims.ndim == 2:
+            rgb_sequence, _, _, _ = colorify.multichannel_to_rgb(
+                rgb_image,
+                cmaps=cmaps,
+                rescale_type='limits', 
+                limits=contrasts,
+                proj_type='sum')
+        else:
+            raise ValueError(f'Viewer dimension {self.viewer.dims.ndim} not supported')
+
+        self.viewer.add_image(rgb_sequence)
